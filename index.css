@@ -540,3 +540,14 @@ button:hover {
 .register-container p {
     margin-top: 10px;
 }
+
+.registration-status-box {
+    color: #ff0000; 
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+.success-message {
+    color: #008000; 
+}
