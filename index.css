@@ -51,15 +51,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 5px;a
+    padding: 5px;
 }
 
 .user-icons-container {
     display: flex;
     align-items: center;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #000000;
     padding-bottom: 5px; 
 }
+
 .dropbtn,
 .cart-icon {
     width: 40px; 
