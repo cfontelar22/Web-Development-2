@@ -28,7 +28,7 @@ include("connect.php");
         </a>
         <nav id="navigation">
             <ul>
-                <li><a href="#">Home</a></li>
+                <li><a href="index.php">Home</a></li>
                 <li class="dropdown">
                     <a href="#">Solutions</a>
                     <div class="dropdown-content">
@@ -72,7 +72,7 @@ include("connect.php");
     <footer id="footer">
         <div class="footer-division">
             <ul>
-                <li><a href="index.html">Home</a></li>
+                <li><a href="index.php">Home</a></li>
                 <li><a href="#">Careers</a></li>
                 <li><a href="#">Privacy Policy</a></li>
                 <li><a href="#">Contact Us</a></li>
@@ -87,7 +87,7 @@ include("connect.php");
             </ul>
         </div>
         <div class="footer-division">
-            <a href="index.html">
+            <a href="index.php">
                 <div><img src="images/lbglogo.png" alt="Logo" class="logo">
                     <p>© Copyright Jay Fontelar<br>All rights reserved. 2023.</p>
                 </div>
