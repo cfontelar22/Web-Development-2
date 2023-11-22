@@ -175,7 +175,7 @@ function getCategoryDescription($categoryName)
     <p>Explore our best-in-class Network Solutions and Structured Cabling services designed to optimize your network infrastructure. Our comprehensive solutions ensure seamless connectivity, scalability, and reliability for your business needs.</p>
     <p>Upgrade your business infrastructure with our cutting-edge Network Solutions and Structured Cabling services. We offer comprehensive solutions designed to enhance connectivity, scalability, and reliability.</p>
     <ul>
-        <?php foreach ($featuredSolutions as $solution) : ?>
+    <?php foreach ($featuredSolutions as $solution) : ?>
             <li>
                 <strong><?php echo $solution['product_name']; ?></strong>
                 <p><?php echo $solution['product_description']; ?></p>
@@ -184,7 +184,6 @@ function getCategoryDescription($categoryName)
         <?php endforeach; ?>
     </ul>
 </div>
-
 <footer id="footer">
     <div class="footer-division">
         <ul>
