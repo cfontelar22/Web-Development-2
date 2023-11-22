@@ -27,7 +27,7 @@ if (!isUserLoggedIn()) {
     </header>
 
     <main>
-        <p>This is your dashboard content.</p>
+       
     </main>
 
     <footer>
