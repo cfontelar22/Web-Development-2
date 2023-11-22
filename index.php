@@ -187,7 +187,7 @@ function getCategoryDescription($categoryName)
 <footer id="footer">
     <div class="footer-division">
         <ul>
-            <li><a href="index.html">Home</a></li>
+            <li><a href="index.php">Home</a></li>
             <li><a href="#">Careers</a></li>
             <li><a href="#">Privacy Policy</a></li>
             <li><a href="#">Contact Us</a></li>
