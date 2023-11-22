@@ -23,7 +23,9 @@ include("connect.php");
 <body>
     <!-- Header -->
     <header id="header" class="fixed-header">
+        <a href="index.php">
         <img src="images/lbglogo.png" alt="Logo" class="logo">
+        </a>
         <nav id="navigation">
             <ul>
                 <li><a href="#">Home</a></li>
