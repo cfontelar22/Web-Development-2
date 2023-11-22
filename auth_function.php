@@ -1,4 +1,4 @@
-git remote add origin <repository_url>
+
 <?php
 
 // Function to check if the user is logged in
