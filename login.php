@@ -62,7 +62,7 @@ if (!isUserLoggedIn()) {
     </a>
         <nav id="navigation">
             <ul>
-                <li><a href="#">Home</a></li>
+                <li><a href="index.php">Home</a></li>
                 <li class="dropdown">
                     <a href="#">Solutions</a>
                     <div class="dropdown-content">
