@@ -551,3 +551,36 @@ button:hover {
 .success-message {
     color: #008000; 
 }
+
+/*DASHBOARD.PHP*/
+
+.dashboard-links {
+    margin-top: 20px;
+}
+
+.dashboard-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.dashboard-links li {
+    margin-bottom: 10px;
+}
+
+.dashboard-links a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f4f4f4;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-links a:hover {
+    background-color: #ddd;
+}
+
+.dashboard-links i {
+    margin-right: 8px;
+}
