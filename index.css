@@ -1,11 +1,11 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    font-size: 16px; /* Adjusted font size for better consistency */
+    font-size: 16px; 
     margin-top: 80px; 
     padding-top: 60px;
-    background-color: #f7f7f7; /* Adjusted background color for consistency */
-    color: #333; /* Adjusted text color for better readability */
+    background-color: #f7f7f7; 
+    color: #333; 
 }
 
 .header-container, #header {
@@ -24,7 +24,6 @@ body {
     background-color: #ffffff; 
     padding: 10px; 
 }
-
 
 #header {
     background-color: #0f2d35;
@@ -48,13 +47,11 @@ body {
     margin: 2px 0; 
 }
 
-
 .user-signin-container {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 5px;
-
+    padding: 5px;a
 }
 
 .user-icons-container {
@@ -523,8 +520,6 @@ button:hover {
     background-color: #217174;
 }
 
-
-
 /* REGISTER.PHP */
 .register-container {
     max-width: 400px;
@@ -544,4 +539,3 @@ button:hover {
 .register-container p {
     margin-top: 10px;
 }
-
