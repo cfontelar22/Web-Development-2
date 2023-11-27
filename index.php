@@ -5,34 +5,44 @@ if (session_status() === PHP_SESSION_NONE) {
 
 include("connect.php");
 
-// Fetch unique category names from the database
-$categorySql = "SELECT DISTINCT name FROM Categories";
-$categoryStmt = $db->query($categorySql);
-$categories = $categoryStmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Fetch details for featured solutions (Network Solutions and Structured Cabling)
-$featuredSolutionsSql = "SELECT Products.name AS product_name, Products.description AS product_description, Products.price AS product_price
-                        FROM Products
-                        JOIN Categories ON Products.category_id = Categories.category_id
-                        WHERE Categories.name IN ('Network Solutions and Structured Cabling')";
-$featuredSolutionsStmt = $db->query($featuredSolutionsSql);
-
-// Initialize $featuredSolutions as an empty array
-$featuredSolutions = array();
-
-// Check if the query was successful and results were obtained
-if ($featuredSolutionsStmt !== false) {
-    $featuredSolutions = $featuredSolutionsStmt->fetchAll(PDO::FETCH_ASSOC);
+// Function to fetch all categories from the database
+function fetchAllCategories($db) {
+    $categoryFetchSql = "SELECT category_id, name, category_description FROM categories";
+    $categoryFetchStmt = $db->query($categoryFetchSql);
+    return $categoryFetchStmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+// Function to fetch featured solutions
+function fetchFeaturedSolutions($db) {
+    $featuredSolutionsSql = "SELECT Products.name AS product_name, Products.description AS product_description, Products.price AS product_price
+                            FROM Products
+                            JOIN Categories ON Products.category_id = Categories.category_id
+                            WHERE Categories.name IN ('Network Solutions and Structured Cabling')";
+    $featuredSolutionsStmt = $db->query($featuredSolutionsSql);
+
+    $featuredSolutions = [];
+
+    // Check if the query was successful and results were obtained
+    if ($featuredSolutionsStmt !== false) {
+        $featuredSolutions = $featuredSolutionsStmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    return $featuredSolutions;
+}
+
+$categories = fetchAllCategories($db);
+$featuredSolutions = fetchFeaturedSolutions($db);
+
+$pageId = 1; 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>SVPB E-Commerce and Smart Solutions</title>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Category</title>
     <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
@@ -51,7 +61,7 @@ if ($featuredSolutionsStmt !== false) {
     <!-- User Signin Container -->
     <div class="user-signin-container">
         <?php
-        if(isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
+        if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             // Display user information or logout link
             echo '<div class="user-dropdown">
                     <span id="signin-link">
@@ -117,52 +127,36 @@ if ($featuredSolutionsStmt !== false) {
         $firstRowCategories = array_slice($categories, 0, 7);
         foreach ($firstRowCategories as $category) :
             $categoryName = $category['name'];
-            ?>
+        ?>
             <div class="product-item">
-                <h2><a href="product.php?category=<?php echo urlencode($categoryName); ?>"><?php echo $categoryName; ?></a></h2>
-                <?php echo getCategoryDescription($categoryName); ?>
-            </div>
-        <?php endforeach; ?>
-    </div>
-    <div class="category-row">
-        <?php
-        $secondRowCategories = array_slice($categories, 7);
-        foreach ($secondRowCategories as $category) :
-            $categoryName = $category['name'];
-            ?>
-            <div class="product-item">
-                <h2><a href="product.php?category=<?php echo urlencode($categoryName); ?>"><?php echo $categoryName; ?></a></h2>
-                <?php echo getCategoryDescription($categoryName); ?>
+                <h2>
+                    <a href="product.php?category=<?php echo urlencode($categoryName); ?>">
+                        <?php echo $categoryName; ?>
+                    </a>
+                </h2>
+                <p><?php echo getCategoryDescription($categoryName); ?></p>
             </div>
         <?php endforeach; ?>
     </div>
 </div>
 
-
 <?php
 function getCategoryDescription($categoryName)
 {
-    $descriptions = array(
-        'Central Processing Units (CPUs)' => 'A CPU, or Central Processing Unit, is the primary component of a computer responsible for executing instructions of a computer program.',
-        'Motherboards' => 'A motherboard is the central circuit board in a computer, connecting and facilitating communication between key hardware components. It determines compatibility, houses the CPU socket, RAM slots, and provides expansion options for additional components.',
-        'Memory (RAM)' => 'RAM, or Random Access Memory, is a type of computer memory that provides high-speed data access to the CPU. It is volatile memory used for running applications and storing temporary data.',
-        'Storage Drives (SSDs and HDDs)' => 'Storage drives, including HDDs and SSDs, are devices used for long-term data storage. HDDs offer larger storage capacity, while SSDs provide faster data access.',
-        'Graphics Cards' => 'Graphics cards, or GPUs, are dedicated hardware components designed to accelerate graphics rendering. They are essential for gaming, video editing, and other graphics-intensive tasks.',
-        'Power Supplies (PSUs)' => 'A power supply unit (PSU) is a critical component that converts electrical power from an outlet into usable power for a computer. It provides energy to other hardware components.',
-        'Cooling Solutions (CPU coolers and case fans)' => 'Cooling solutions, including CPU coolers and case fans, are essential for maintaining optimal operating temperatures. They prevent overheating and ensure system stability.',
-        'Network Interface Cards (NICs)' => 'Network Interface Cards (NICs) enable computers to connect to networks. They facilitate communication by providing a network connection for data transmission.',
-        'Input Devices (Keyboards, Mice, etc.)' => 'Input devices, such as keyboards and mice, are peripherals that allow users to interact with and control the computer. They are crucial for user input.',
-        'Monitors' => 'Monitors are display devices that visually present information generated by the computer. They come in various sizes and resolutions, enhancing the user experience.',
-        'Printers and Scanners' => 'Printers and scanners are devices used for producing hard copies of digital documents and converting physical documents into digital format, respectively.',
-        'Security Solutions' => 'Security solutions encompass hardware and software measures designed to protect computer systems and data from unauthorized access, cyber threats, and malicious activities.',
-        'Network Solutions and Structured Cabling' => 'Network Solutions and Structured Cabling services optimize network infrastructure for seamless connectivity, scalability, and reliability in business environments.',
-        'Information and Communication Technology Infrastructure' => 'ICT infrastructure refers to the hardware, software, networks, and facilities that support information and communication technology services within an organization.'
-    );
+    global $db;
 
-    return isset($descriptions[$categoryName]) ? '<p>' . $descriptions[$categoryName] . '</p>' : '';
+    // Query the database to get the category description
+    $descriptionSql = "SELECT category_description FROM categories WHERE name = :categoryName";
+    $descriptionStmt = $db->prepare($descriptionSql);
+    $descriptionStmt->bindParam(':categoryName', $categoryName);
+    $descriptionStmt->execute();
+
+    $result = $descriptionStmt->fetch(PDO::FETCH_ASSOC);
+
+    // Return the description if available, or an empty string if not found
+    return isset($result['category_description']) ? '<p>' . $result['category_description'] . '</p>' : '';
 }
 ?>
-
 
 <div id="text-box">
     <h1 id="h1">LBG E-COMMERCE AND SMART SOLUTIONS</h1>
@@ -175,7 +169,7 @@ function getCategoryDescription($categoryName)
     <p>Explore our best-in-class Network Solutions and Structured Cabling services designed to optimize your network infrastructure. Our comprehensive solutions ensure seamless connectivity, scalability, and reliability for your business needs.</p>
     <p>Upgrade your business infrastructure with our cutting-edge Network Solutions and Structured Cabling services. We offer comprehensive solutions designed to enhance connectivity, scalability, and reliability.</p>
     <ul>
-    <?php foreach ($featuredSolutions as $solution) : ?>
+        <?php foreach ($featuredSolutions as $solution) : ?>
             <li>
                 <strong><?php echo $solution['product_name']; ?></strong>
                 <p><?php echo $solution['product_description']; ?></p>
@@ -184,6 +178,7 @@ function getCategoryDescription($categoryName)
         <?php endforeach; ?>
     </ul>
 </div>
+
 <footer id="footer">
     <div class="footer-division">
         <ul>
@@ -214,7 +209,6 @@ function getCategoryDescription($categoryName)
 </html>
 
 <script>
-
 const slideshowContainer = document.getElementById('slideshow-container');
 const images = slideshowContainer.querySelectorAll('img');
 let currentIndex = 0;
@@ -237,5 +231,4 @@ window.addEventListener('scroll', () => {
         header.classList.remove('fixed-header');
     }
 });
-
 </script>
