@@ -1,27 +1,34 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 include("connect.php");
 
 // Function to fetch all categories from the database
 function fetchAllCategories($db) {
-    $categoryFetchSql = "SELECT category_id, name FROM categories";
+    $categoryFetchSql = "SELECT category_id, name, category_description FROM categories";
     $categoryFetchStmt = $db->query($categoryFetchSql);
     return $categoryFetchStmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+$categories = fetchAllCategories($db);
+
+// Initialize $formAction to avoid "Undefined variable" warnings
+$formAction = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formAction = isset($_POST['form_action']) ? $_POST['form_action'] : '';
 
     // Handle category creation
     if ($formAction === 'create_category') {
-        // Validate and sanitize form data
         $categoryName = isset($_POST['category_name']) ? htmlspecialchars($_POST['category_name']) : '';
+        $categoryDescription = isset($_POST['category_description']) ? htmlspecialchars($_POST['category_description']) : '';
 
-        // Insert data into the database
-        $insertCategorySql = "INSERT INTO categories (name) VALUES (:name)";
+        $insertCategorySql = "INSERT INTO categories (name, category_description) VALUES (:name, :category_description)";
         $insertCategoryStmt = $db->prepare($insertCategorySql);
         $insertCategoryStmt->bindParam(':name', $categoryName);
+        $insertCategoryStmt->bindParam(':category_description', $categoryDescription);
 
         if ($insertCategoryStmt->execute()) {
             echo "Category added successfully!";
@@ -67,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch all categories from the database
 $categories = fetchAllCategories($db);
 ?>
 
@@ -81,20 +87,15 @@ $categories = fetchAllCategories($db);
 </head>
 <body>
     <h1>Create New Category</h1>
-    <form action="create_category.php" method="post">
-        <label for="category_id">Select Category:</label>
-        <select id="category_id" name="category_id">
-            <?php foreach ($categories as $category): ?>
-                <option value="<?= $category['category_id'] ?>"><?= $category['name'] ?></option>
-            <?php endforeach; ?>
-        </select>
-
+    <form id="create_category_form" action="create_category.php" method="post">
         <label for="category_name">Category Name:</label>
         <input type="text" id="category_name" name="category_name" required>
 
+        <label for="category_description">Category Description:</label>
+        <textarea id="category_description" name="category_description" required></textarea>
+
         <input type="hidden" id="form_action" name="form_action" value="">
         <button type="button" onclick="submitForm('create_category')">Add</button>
-        
     </form>
 
     <!-- Display all categories -->
@@ -104,6 +105,8 @@ $categories = fetchAllCategories($db);
             <tr>
                 <th>ID</th>
                 <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -111,6 +114,7 @@ $categories = fetchAllCategories($db);
                 <tr>
                     <td><?= $category['category_id'] ?></td>
                     <td><?= $category['name'] ?></td>
+                    <td><?= isset($category['category_description']) ? $category['category_description'] : '' ?></td>
                     <td>
                         <button type="button" onclick="populateFormForUpdate(<?= $category['category_id'] ?>)">Update</button>
                         <button type="button" onclick="populateFormForDeletion(<?= $category['category_id'] ?>)">Delete</button>
@@ -119,12 +123,11 @@ $categories = fetchAllCategories($db);
             <?php endforeach; ?>
         </tbody>
     </table>
-
     <!-- JavaScript to populate the form for update or deletion -->
     <script>
         function submitForm(action) {
             document.getElementById('form_action').value = action;
-            document.forms[0].submit();
+            document.getElementById('create_category_form').submit();
         }
 
         function populateFormForUpdate(categoryId) {
