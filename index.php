@@ -42,12 +42,35 @@ $pageId = 1;
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New Category</title>
+    <title>LBG E-COM AND SMART SOLUTIONS</title>
     <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
 
 <div class="header-container">
+<div class="main-navigation">
+    <nav id="main-nav">
+        <ul>
+           
+            <?php foreach ($categories as $category) : ?>
+                <li class="dropdown">
+                    <a href="#"><?php echo htmlspecialchars($category['name']); ?></a>
+                    <div class="dropdown-content">
+                        <?php
+                            // Fetch products for the current category
+                            $categoryProducts = fetchProductsByCategory($db, $category['category_id']);
+
+                            foreach ($categoryProducts as $product) {
+                                echo '<a href="#">' . htmlspecialchars($product['name']) . '</a>';
+                            }
+                        ?>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </nav>
+</div>
+
     <!-- Search Container -->
     <div class="search-container">
         <div class="search-input-container">
@@ -118,29 +141,50 @@ $pageId = 1;
             <li><a href="#">Contact Us</a></li>
         </ul>
     </nav>
+
 </header>
 
 <div class="product-listing">
-    <h1>Products Offered</h1>
-    <div class="category-row">
-        <?php
-        $firstRowCategories = array_slice($categories, 0, 7);
-        foreach ($firstRowCategories as $category) :
-            $categoryName = $category['name'];
-        ?>
-            <div class="product-item">
-                <h2>
-                    <a href="product.php?category=<?php echo urlencode($categoryName); ?>">
-                        <?php echo $categoryName; ?>
+    <h1 class="products-title">Explore Our Product Offerings</h1>
+    <div class="product-grid">
+        <?php foreach ($categories as $category) : ?>
+            <?php
+            // Fetch products for the current category
+            $categoryProducts = fetchProductsByCategory($db, $category['category_id']);
+
+            foreach ($categoryProducts as $product) :
+            ?>
+                <div class="product-item">
+                    <a href="product.php?category=<?php echo urlencode($category['name']); ?>" class="product-link">
+                        <img src="images/product_image.jpg" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                        <h2 class="product-title">
+                            <?php echo htmlspecialchars($product['name']); ?>
+                        </h2>
                     </a>
-                </h2>
-                <p><?php echo getCategoryDescription($categoryName); ?></p>
-            </div>
+                    <div class="product-details">
+                        <p><?php echo htmlspecialchars($product['description']); ?></p>
+                        <p class="product-price">$<?php echo $product['price']; ?></p>
+                        <a href="#" class="add-to-cart-button">Add to Cart</a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         <?php endforeach; ?>
     </div>
 </div>
 
+
 <?php
+
+
+// Function to fetch products for a specific category
+function fetchProductsByCategory($db, $categoryId) {
+    $productSql = "SELECT * FROM products WHERE category_id = :category_id";
+    $productStmt = $db->prepare($productSql);
+    $productStmt->bindParam(':category_id', $categoryId);
+    $productStmt->execute();
+    return $productStmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 function getCategoryDescription($categoryName)
 {
     global $db;
@@ -161,22 +205,7 @@ function getCategoryDescription($categoryName)
 <div id="text-box">
     <h1 id="h1">LBG E-COMMERCE AND SMART SOLUTIONS</h1>
     <h2 id="h2">Bright Solutions, Profitable Ideas</h2>
-    <p>L.B.G E-COMMERCE AND SMART SOLUTIONS is a distinguished Information Technology service provider, specializing in providing cutting-edge computer parts and IT solutions to small, medium, and large organizations. With a strong focus on technological collaboration, they empower their clients to find the best computer parts and IT solutions to enhance their operations. SVPB E-Commerce and Smart Solutions' mission is to assist businesses in fulfilling their IT needs, allowing them to concentrate on their core competencies while delivering high-quality computer parts built on simplicity, security, and scalability.</p>
-</div>
-
-<div id="featured-solutions-box">
-    <h2>Featured Solutions: Network Solutions and Structured Cabling</h2>
-    <p>Explore our best-in-class Network Solutions and Structured Cabling services designed to optimize your network infrastructure. Our comprehensive solutions ensure seamless connectivity, scalability, and reliability for your business needs.</p>
-    <p>Upgrade your business infrastructure with our cutting-edge Network Solutions and Structured Cabling services. We offer comprehensive solutions designed to enhance connectivity, scalability, and reliability.</p>
-    <ul>
-        <?php foreach ($featuredSolutions as $solution) : ?>
-            <li>
-                <strong><?php echo $solution['product_name']; ?></strong>
-                <p><?php echo $solution['product_description']; ?></p>
-                <p>Price: $<?php echo $solution['product_price']; ?></p>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+    <p>L.B.G E-COMMERCE AND SMART SOLUTIONS is a distinguished Information Technology service provider, specializing in providing cutting-edge computer parts and IT solutions to small, medium, and large organizations. With a strong focus on technological collaboration, they empower their clients to find the best computer parts and IT solutions to enhance their operations. L.B.G E-Commerce and Smart Solutions' mission is to assist businesses in fulfilling their IT needs, allowing them to concentrate on their core competencies while delivering high-quality computer parts built on simplicity, security, and scalability.</p>
 </div>
 
 <footer id="footer">
