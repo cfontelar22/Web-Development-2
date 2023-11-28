@@ -15,7 +15,7 @@ if (!isUserLoggedIn()) {
             $_SESSION['username'] = $username;
 
             // Redirect to the dashboard or another page
-            header("Location: dashboard.php");
+            header("Location: index.php");
             exit();
         } else {
             // Authentication failed, show an error message
@@ -33,7 +33,7 @@ if (!isUserLoggedIn()) {
             $_SESSION['username'] = $username;
 
             // Redirect to the dashboard or another page
-            header("Location: dashboard.php");
+            header("Location: index.php");
             exit();
         } else {
             // Authentication failed, show an error message
