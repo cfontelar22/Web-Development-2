@@ -1,46 +1,75 @@
 <?php
-session_start();
-include("auth_function.php");
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Check if the user is logged in
-if (!isUserLoggedIn()) {
-    // User is not logged in, show the login form
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // If the form is submitted, attempt to authenticate
-        $username = $_POST['username'];
-        $password = $_POST['password'];
+// Include the connection file
+include("connect.php");
 
-        if (authenticateUser($username, $password)) {
-            // Authentication successful, set session variables
-            $_SESSION['username'] = $username;
+// Function to authenticate a user
+function authenticateUser($username, $password) {
+    global $db;
 
-            // Redirect to the dashboard or another page
-            header("Location: index.php");
-            exit();
-        } else {
-            // Authentication failed, show an error message
-            $loginError = "Invalid username or password";
-        }
+    // Modify this query based on your database structure
+    $query = "SELECT * FROM `users` WHERE `username` = :username";
+    $statement = $db->prepare($query);
+    $statement->bindParam(':username', $username, PDO::PARAM_STR);
+    $statement->execute();
+    $user = $statement->fetch(PDO::FETCH_ASSOC);
+
+    if ($user && password_verify($password, $user['password'])) {
+        // Password is correct
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role']; // Store the user's role in the session
+        return true;
     }
-} else {
-    // User is already logged in, allow them to manually enter credentials
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $username = $_POST['username'];
-        $password = $_POST['password'];
 
-        if (authenticateUser($username, $password)) {
-            // Authentication successful, set session variables
-            $_SESSION['username'] = $username;
+    // Check if the user exists in the admins table
+    $query = "SELECT * FROM `admins` WHERE `username` = :username";
+    $statement = $db->prepare($query);
+    $statement->bindParam(':username', $username, PDO::PARAM_STR);
+    $statement->execute();
+    $admin = $statement->fetch(PDO::FETCH_ASSOC);
 
-            // Redirect to the dashboard or another page
-            header("Location: index.php");
+    if ($admin && password_verify($password, $admin['password'])) {
+        // Password is correct
+        $_SESSION['admin_id'] = $admin['admin_id'];
+        $_SESSION['username'] = $admin['username'];
+        $_SESSION['role'] = $admin['role']; // Store the admin's role in the session
+        return true;
+    }
+
+    // Password is incorrect
+    return false;
+}
+
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // If the form is submitted, attempt to authenticate
+    $username = filter_var($_POST['username'], FILTER_SANITIZE_STRING);
+    $password = filter_var($_POST['password'], FILTER_SANITIZE_STRING);
+
+
+    if (authenticateUser($username, $password)) {
+        // Authentication successful, set session variables
+        if ($_SESSION['role'] === 'admin') {
+            // Redirect admin to admin dashboard or CRUD page
+            header("Location: admin_dashboard.php");
             exit();
         } else {
-            // Authentication failed, show an error message
-            $loginError = "Invalid username or password";
+            // Redirect regular user to user dashboard or homepage
+            header("Location: index.php");
+            exit();
         }
+    } else {
+        // Authentication failed, show an error message
+        $_SESSION['error'] = "Invalid username or password";
+        header("Location: login.php");
+        exit();
     }
 }
+
 ?>
 
 <!DOCTYPE html>
