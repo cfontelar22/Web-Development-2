@@ -5,6 +5,27 @@ if (session_status() === PHP_SESSION_NONE) {
 
 include("connect.php");
 
+
+// Fetch product_id from GET parameters
+$product_id = filter_input(INPUT_GET, 'product_id', FILTER_VALIDATE_INT);
+
+    $productSql = "SELECT * FROM products WHERE product_id = :product_id";
+    $productStmt = $db->prepare($productSql);
+    $productStmt->bindParam(':product_id', $product_id, PDO::PARAM_INT);
+    $productStmt->execute();
+    $product = $productStmt->fetch(PDO::FETCH_ASSOC);
+
+
+// Check if the admin is logged in and the username is stored in the session
+if (isset($_SESSION['username'])) {
+    // Get the admin's username from the session
+    $username = $_SESSION['username'];
+} else {
+    // Redirect to the login page if the admin is not logged in
+    header("Location: login.php"); 
+    exit();
+}
+
 // Function to fetch all categories from the database
 function fetchAllCategories($db) {
     $categoryFetchSql = "SELECT category_id, name, category_description FROM categories";
@@ -12,27 +33,7 @@ function fetchAllCategories($db) {
     return $categoryFetchStmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Function to fetch featured solutions
-function fetchFeaturedSolutions($db) {
-    $featuredSolutionsSql = "SELECT Products.name AS product_name, Products.description AS product_description, Products.price AS product_price
-                            FROM Products
-                            JOIN Categories ON Products.category_id = Categories.category_id
-                            WHERE Categories.name IN ('Network Solutions and Structured Cabling')";
-    $featuredSolutionsStmt = $db->query($featuredSolutionsSql);
-
-    $featuredSolutions = [];
-
-    // Check if the query was successful and results were obtained
-    if ($featuredSolutionsStmt !== false) {
-        $featuredSolutions = $featuredSolutionsStmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    return $featuredSolutions;
-}
-
 $categories = fetchAllCategories($db);
-$featuredSolutions = fetchFeaturedSolutions($db);
-
 $pageId = 1; 
 ?>
 
@@ -46,50 +47,47 @@ $pageId = 1;
     <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
-
 <div class="header-container">
-<div class="main-navigation">
-    <nav id="main-nav">
-        <ul>
-           
-            <?php foreach ($categories as $category) : ?>
-                <li class="dropdown">
-                    <a href="#"><?php echo htmlspecialchars($category['name']); ?></a>
-                    <div class="dropdown-content">
-                        <?php
-                            // Fetch products for the current category
-                            $categoryProducts = fetchProductsByCategory($db, $category['category_id']);
+    <div class="main-navigation">
+        <nav id="main-nav">
+            <ul>
+                <?php foreach ($categories as $category) : ?>
+                    <li class="dropdown">
+                        <a href="#"><?php echo htmlspecialchars($category['name']); ?></a>
+                        <div class="dropdown-content">
+                            <?php
+                                // Fetch products for the current category
+                                $categoryProducts = fetchProductsByCategory($db, $category['category_id']);
 
-                            foreach ($categoryProducts as $product) {
-                                echo '<a href="#">' . htmlspecialchars($product['name']) . '</a>';
-                            }
-                        ?>
-                    </div>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    </nav>
+                                foreach ($categoryProducts as $product) {
+                                    // Modify the link to include product_id
+                                    echo '<a href="product.php?product_id=' . $product['product_id'] . '">' . htmlspecialchars($product['name']) . '</a>';
+                                }
+                            ?>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </nav>
+    </div>
 </div>
 
     <!-- Search Container -->
     <div class="search-container">
         <div class="search-input-container">
-            <input type="text" id="search" name="search" placeholder="SEARCH BY CATEGORY">
+            <input type="text" id="search" name="search" placeholder="PRODUCT SEARCH">
             <button type="button" onclick="searchProducts()">
                 <img src="images/icon.png" alt="Search" class="search-button-icon">
             </button>
         </div>
     </div>
-
-    <!-- User Signin Container -->
-    <div class="user-signin-container">
+    <div class="pagination-links"></div>
+     <!-- User Signin Container -->
+     <div class="user-signin-container">
         <?php
         if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             // Display user information or logout link
             echo '<div class="user-dropdown">
-                    <span id="signin-link">
-                        Welcome, ' . $_SESSION['username'] . '!
-                    </span>
                     <div class="dropdown-content">
                         <a href="logout.php">Logout</a>
                     </div>
@@ -120,6 +118,8 @@ $pageId = 1;
 </form>
 
 <div id="header-separator"></div>
+
+
 <header id="header" class="fixed-header">
     <a href="index.php">
         <img src="images/lbglogo.png" alt="Logo" class="logo">
@@ -139,10 +139,25 @@ $pageId = 1;
             <li><a href="#">Events</a></li>
             <li><a href="#">Jobs</a></li>
             <li><a href="#">Contact Us</a></li>
+    
+            <li><a href="admin_register.php">Admin Register</a></li>
         </ul>
     </nav>
-
 </header>
+
+
+<div id="welcome-container">
+    <h2>Welcome, <?= $username ?>!</h2>
+
+    <?php
+
+    // Check if the user is an admin
+if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']) {
+    echo '<a href="admin_dashboard.php">Go to Admin Dashboard</a>';
+}
+
+?>
+</div>
 
 <div class="product-listing">
     <h1 class="products-title">Explore Our Product Offerings</h1>
@@ -154,19 +169,20 @@ $pageId = 1;
 
             foreach ($categoryProducts as $product) :
             ?>
-                <div class="product-item">
-                    <a href="product.php?category=<?php echo urlencode($category['name']); ?>" class="product-link">
-                        <img src="images/product_image.jpg" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                        <h2 class="product-title">
-                            <?php echo htmlspecialchars($product['name']); ?>
-                        </h2>
-                    </a>
-                    <div class="product-details">
-                        <p><?php echo htmlspecialchars($product['description']); ?></p>
-                        <p class="product-price">$<?php echo $product['price']; ?></p>
-                        <a href="#" class="add-to-cart-button">Add to Cart</a>
-                    </div>
-                </div>
+               <div class="product-item">
+    <a href="product.php?product_id=<?php echo $product['product_id']; ?>" class="product-link">
+        <img src="path/to/upload/directory/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+        <h2 class="product-title">
+            <?php echo htmlspecialchars($product['name']); ?>
+        </h2>
+    </a>
+    <div class="product-details">
+        <p><?php echo htmlspecialchars($product['description']); ?></p>
+        <p class="product-price">$<?php echo $product['price']; ?></p>
+        <a href="product.php?product_id=<?php echo $product['product_id']; ?>" class="add-to-cart-button">View Item</a>
+    </div>
+</div>
+
             <?php endforeach; ?>
         <?php endforeach; ?>
     </div>
@@ -260,4 +276,34 @@ window.addEventListener('scroll', () => {
         header.classList.remove('fixed-header');
     }
 });
+
+// Update the searchProducts function in your script tag
+function searchProducts() {
+    const searchInput = document.getElementById('search');
+    const searchTerm = searchInput.value.trim();
+
+    if (searchTerm !== '') {
+        // Get the current page from the URL (if available)
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPage = urlParams.get('page') || 1;
+
+        // Send an AJAX request to the server for searching products and categories
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `search.php?search=${encodeURIComponent(searchTerm)}&page=${currentPage}`, true);
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // Replace the product grid content with the search results
+                document.querySelector('.product-grid').innerHTML = xhr.responseText;
+
+                // You may also update the pagination links here
+                const paginationContainer = document.querySelector('.pagination-links');
+                paginationContainer.innerHTML = xhr.response;
+            }
+        };
+
+        xhr.send();
+    }
+}
+
 </script>
