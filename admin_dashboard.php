@@ -90,6 +90,8 @@ function deleteCategory($db) {
     }
 }
 
+
+
 // Function to handle product creation
 function createProduct($db) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -222,8 +224,42 @@ function fetchAllProductsWithSorting($db, $sortBy, $sortDir) {
     return $productFetchStmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+
 // Fetch products with sorting
 $products = fetchAllProductsWithSorting($db, $sortBy, $sortDir);
+
+
+// Function to fetch product comments by product ID with user information
+function fetchProductCommentsWithUserInfo($db, $productId) {
+    $commentsFetchSql = "SELECT c.*, u.username as user_username FROM comments c
+                        LEFT JOIN users u ON c.username = u.id
+                        WHERE c.product_id = :product_id";
+    $commentsFetchStmt = $db->prepare($commentsFetchSql);
+    $commentsFetchStmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+    $commentsFetchStmt->execute();
+    return $commentsFetchStmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Function to insert a comment for a specific product
+function insertCommentForProduct($db, $productId, $userId, $comment) {
+    $insertCommentSql = "INSERT INTO comments (product_id, username, comment_id), VALUES (:product_id, :username, :comment_id)";
+    $insertCommentStmt = $db->prepare($insertCommentSql);
+    $insertCommentStmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+    $insertCommentStmt->bindParam(':username', $userId);
+    $insertCommentStmt->bindParam(':comment_id', $comment);
+
+    return $insertCommentStmt->execute();
+}
+
+
+// Function to fetch all comments from the database
+function fetchAllComments($db) {
+    $commentFetchSql = "SELECT * FROM comments";
+    $commentFetchStmt = $db->query($commentFetchSql);
+    return $commentFetchStmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
 ?>
 
 
@@ -312,10 +348,12 @@ $products = fetchAllProductsWithSorting($db, $sortBy, $sortDir);
     </nav>
 </header>
 
-    <div id="welcome-container">
-        <h2>Welcome, <?= $adminUsername ?>!</h2>
-    </div>
-
+<div id="welcome-container">
+    <h2>Welcome, <?= $adminUsername ?>!</h2>
+    
+ 
+    <a href="index.php">Go to Home</a>
+</div>
 
     <h1>Admin Dashboard</h1>
 
@@ -478,6 +516,34 @@ $products = fetchAllProductsWithSorting($db, $sortBy, $sortDir);
         </tr>
     <?php endforeach; ?>
 </table>
+
+<h1>All Comments</h1>
+<table border="1">
+    <tr>
+        <th>Comment ID</th>
+        <th>Product ID</th>
+        <th>Username</th>
+        <th>Comment Text</th>
+        <th>Created At</th>
+    </tr>
+    <?php
+    // Fetch all comments
+    $comments = fetchAllComments($db);
+
+    // Display comments in a table
+    foreach ($comments as $comment) {
+        echo '<tr>';
+        echo '<td>' . $comment['comment_id'] . '</td>';
+        echo '<td>' . $comment['product_id'] . '</td>';
+        echo '<td>' . $comment['username'] . '</td>';
+        echo '<td>' . $comment['comment'] . '</td>';
+        echo '<td>' . $comment['created_at'] . '</td>';
+        echo '</tr>';
+    }
+    ?>
+</table>
+
+
 <footer id="footer">
     <div class="footer-division">
         <ul>
