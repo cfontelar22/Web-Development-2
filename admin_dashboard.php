@@ -8,6 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Include the database connection file
 include("connect.php");
 
+
 // Check if the admin is logged in and the username is stored in the session
 if (isset($_SESSION['username'])) {
     // Get the admin's username from the session
@@ -16,6 +17,16 @@ if (isset($_SESSION['username'])) {
     // Redirect to the login page if the admin is not logged in
     header("Location: admin_dashboard.php"); 
     exit();
+}
+
+// Function to validate and sanitize numeric inputs
+function sanitizeAndValidateNumeric($value) {
+    return filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) ?: null;
+}
+
+// Function to sanitize strings
+function sanitizeString($input) {
+    return htmlspecialchars($input, ENT_QUOTES, 'UTF-8');
 }
 
 // Function to fetch all categories from the database
@@ -36,9 +47,8 @@ function fetchAllProducts($db) {
 // Function to handle category creation
 function createCategory($db) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $categoryName = isset($_POST['category_name']) ? htmlspecialchars($_POST['category_name']) : '';
-        $categoryDescription = isset($_POST['category_description']) ? htmlspecialchars($_POST['category_description']) : '';
-
+        $categoryName = isset($_POST['category_name']) ? sanitizeString($_POST['category_name']) : '';
+        $categoryDescription = isset($_POST['category_description']) ? sanitizeString($_POST['category_description']) : '';
         $insertCategorySql = "INSERT INTO categories (name, category_description) VALUES (:name, :category_description)";
         $insertCategoryStmt = $db->prepare($insertCategorySql);
         $insertCategoryStmt->bindParam(':name', $categoryName);
@@ -55,10 +65,10 @@ function createCategory($db) {
 // Function to handle category update
 function updateCategory($db) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['form_action'] === 'update_category') {
-        $categoryId = isset($_POST['category_id']) ? intval($_POST['category_id']) : 0;
-        $categoryName = isset($_POST['updated_category_name']) ? htmlspecialchars($_POST['updated_category_name']) : '';
-        $categoryDescription = isset($_POST['updated_category_description']) ? htmlspecialchars($_POST['updated_category_description']) : '';
-
+        $categoryId = isset($_POST['category_id']) ? sanitizeAndValidateNumeric($_POST['category_id']) : 0;
+        $categoryName = isset($_POST['updated_category_name']) ? sanitizeString($_POST['updated_category_name']) : '';
+        $categoryDescription = isset($_POST['updated_category_description']) ? sanitizeString($_POST['updated_category_description']) : '';
+        
         $updateCategorySql = "UPDATE categories SET name = :name, category_description = :category_description WHERE category_id = :category_id";
         $updateCategoryStmt = $db->prepare($updateCategorySql);
         $updateCategoryStmt->bindParam(':category_id', $categoryId);
@@ -95,11 +105,11 @@ function deleteCategory($db) {
 // Function to handle product creation
 function createProduct($db) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $productName = isset($_POST['product_name']) ? htmlspecialchars($_POST['product_name']) : '';
-        $productDescription = isset($_POST['product_description']) ? htmlspecialchars($_POST['product_description']) : '';
+        $productName = isset($_POST['product_name']) ? sanitizeString($_POST['product_name']) : '';
+        $productDescription = isset($_POST['product_description']) ? sanitizeString($_POST['product_description']) : '';
         $productPrice = isset($_POST['product_price']) ? floatval($_POST['product_price']) : 0.0;
-        $categoryID = isset($_POST['category_id']) ? intval($_POST['category_id']) : 0;
-        $stockQuantity = isset($_POST['stock_quantity']) ? intval($_POST['stock_quantity']) : 0;
+        $categoryID = isset($_POST['category_id']) ? sanitizeAndValidateNumeric($_POST['category_id']) : 0;
+        $stockQuantity = isset($_POST['stock_quantity']) ? sanitizeAndValidateNumeric($_POST['stock_quantity']) : 0;
 
         $insertProductSql = "INSERT INTO products (name, description, price, category_id, stock_quantity) VALUES (:name, :description, :price, :category_id, :stock_quantity)";
         $insertProductStmt = $db->prepare($insertProductSql);
@@ -120,12 +130,12 @@ function createProduct($db) {
 // Function to handle product update
 function updateProduct($db) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['form_action'] === 'update_product') {
-        $productId = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-        $productName = isset($_POST['updated_product_name']) ? htmlspecialchars($_POST['updated_product_name']) : '';
-        $productDescription = isset($_POST['updated_product_description']) ? htmlspecialchars($_POST['updated_product_description']) : '';
+        $productId = isset($_POST['product_id']) ? sanitizeAndValidateNumeric($_POST['product_id']) : 0;
+        $productName = isset($_POST['updated_product_name']) ? sanitizeString($_POST['updated_product_name']) : '';
+        $productDescription = isset($_POST['updated_product_description']) ? sanitizeString($_POST['updated_product_description']) : '';
         $productPrice = isset($_POST['updated_product_price']) ? floatval($_POST['updated_product_price']) : 0.0;
-        $stockQuantity = isset($_POST['updated_stock_quantity']) ? intval($_POST['updated_stock_quantity']) : 0;
-        $categoryId = isset($_POST['updated_category_id']) ? intval($_POST['updated_category_id']) : 0;
+        $stockQuantity = isset($_POST['updated_stock_quantity']) ? sanitizeAndValidateNumeric($_POST['updated_stock_quantity']) : 0;
+        $categoryId = isset($_POST['updated_category_id']) ? sanitizeAndValidateNumeric($_POST['updated_category_id']) : 0;
 
         $updateProductSql = "UPDATE products SET name = :name, description = :description, price = :price, stock_quantity = :stock_quantity, category_id = :category_id WHERE product_id = :product_id";
         $updateProductStmt = $db->prepare($updateProductSql);
@@ -148,7 +158,7 @@ function updateProduct($db) {
 // Function to handle product deletion
 function deleteProduct($db) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $productId = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+        $productId = isset($_POST['product_id']) ? sanitizeAndValidateNumeric($_POST['product_id']) : 0;
 
         $deleteProductSql = "DELETE FROM products WHERE product_id = :product_id";
         $deleteProductStmt = $db->prepare($deleteProductSql);
@@ -260,6 +270,101 @@ function fetchAllComments($db) {
 }
 
 
+// Function to handle user update
+function updateUser($db) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['form_action'] === 'update_user') {
+        $userId = isset($_POST['user_id']) ? sanitizeAndValidateNumeric($_POST['user_id']) : 0;
+        $username = isset($_POST['updated_username']) ? sanitizeString($_POST['updated_username']) : '';
+        $password = isset($_POST['updated_password']) ? password_hash($_POST['updated_password'], PASSWORD_DEFAULT) : ''; // Hash the updated password
+
+        $updateUserSql = "UPDATE users SET username = :username, password = :password WHERE user_id = :user_id";
+        $updateUserStmt = $db->prepare($updateUserSql);
+        $updateUserStmt->bindParam(':user_id', $userId);
+        $updateUserStmt->bindParam(':username', $username);
+        $updateUserStmt->bindParam(':password', $password);
+
+        if ($updateUserStmt->execute()) {
+            echo "User updated successfully!";
+        } else {
+            echo "Error updating user.";
+        }
+    }
+}
+
+// Function to handle user deletion
+function deleteUser($db) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['form_action'] === 'delete_user') {
+        $userId = isset($_POST['user_id']) ? sanitizeAndValidateNumeric($_POST['user_id']) : 0;
+
+        $deleteUserSql = "DELETE FROM users WHERE user_id = :user_id";
+        $deleteUserStmt = $db->prepare($deleteUserSql);
+        $deleteUserStmt->bindParam(':user_id', $userId);
+
+        if ($deleteUserStmt->execute()) {
+            echo "User deleted successfully!";
+        } else {
+            echo "Error deleting user.";
+        }
+    }
+}
+
+// Function to handle user creation
+
+function createUser($db) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['form_action'] === 'create_user') {
+        $username = isset($_POST['new_username']) ? sanitizeString($_POST['new_username']) : '';
+        $password = isset($_POST['new_password']) ? password_hash($_POST['new_password'], PASSWORD_DEFAULT) : '';
+        $email = isset($_POST['new_email']) ? sanitizeString($_POST['new_email']) : '';
+        $role = isset($_POST['new_role']) ? sanitizeString($_POST['new_role']) : '';
+
+        $createUserSql = "INSERT INTO users (username, password, email, role) VALUES (:username, :password, :email, :role)";
+        $createUserStmt = $db->prepare($createUserSql);
+        $createUserStmt->bindParam(':username', $username);
+        $createUserStmt->bindParam(':password', $password);
+        $createUserStmt->bindParam(':email', $email);
+        $createUserStmt->bindParam(':role', $role);
+
+        if ($createUserStmt->execute()) {
+            echo "User created successfully!";
+        } else {
+            echo "Error creating user.";
+        }
+    }
+}
+
+
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $formAction = isset($_POST['form_action']) ? $_POST['form_action'] : '';
+
+    // Handle user creation
+    if ($formAction === 'create_user') {
+        createUser($db);
+    }
+
+    // Handle user update
+    elseif ($formAction === 'update_user') {
+        updateUser($db);
+    }
+
+    // Handle user deletion
+    elseif ($formAction === 'delete_user') {
+        deleteUser($db);
+    }
+}
+
+// Function to fetch all users from the database
+function fetchAllUsers($db) {
+    $userFetchSql = "SELECT user_id, username, password FROM users"; 
+    $userFetchStmt = $db->query($userFetchSql);
+    return $userFetchStmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+// Fetch all users
+$users = fetchAllUsers($db);
+
+
 ?>
 
 
@@ -284,19 +389,19 @@ function fetchAllComments($db) {
         </div>
     </div>
 
-    <!-- User Signin Container -->
     <div class="user-signin-container">
         <?php
         if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             // Display user information or logout link
-            echo '<div class="user-dropdown">
-                    <span id="signin-link">
-                        Welcome, ' . $_SESSION['username'] . '!
-                    </span>
-                    <div class="dropdown-content">
-                        <a href="logout.php">Logout</a>
-                    </div>
-                </div>';
+            // Display user information or logout link
+echo '<div class="user-dropdown">
+<span id="signin-link">
+    Welcome, ' . sanitizeString($_SESSION['username']) . '!
+</span>
+<div class="dropdown-content">
+    <a href="logout.php">Logout</a>
+</div>
+</div>';
         } else {
             // Display login and registration links
             echo '<div class="user-dropdown">
@@ -310,6 +415,7 @@ function fetchAllComments($db) {
                 </div>';
         }
         ?>
+
         <a href="addtocart.html">
             <img src="images/cart.png" alt="Cart" class="cart-icon">
         </a>
@@ -542,6 +648,69 @@ function fetchAllComments($db) {
     }
     ?>
 </table>
+
+<!-- User Management Section -->
+<h1>User Management</h1>
+
+<!-- User form -->
+<h2>Create, Update, and Delete Users</h2>
+
+<form action="admin_dashboard.php" method="post">
+    <label for="new_username">New Username:</label>
+    <input type="text" name="new_username" required>
+
+    <label for="new_password">New Password:</label>
+    <input type="password" name="new_password" required>
+
+    <label for="new_email">New Email:</label>
+    <input type="text" name="new_email" required>
+
+    <label for="new_role">New Role:</label>
+    <input type="text" name="new_role" required>
+
+    <input type="hidden" name="form_action" value="create_user">
+    <button type="submit">Create User</button>
+</form>
+
+
+<!-- Display all users -->
+
+<h2>All Users</h2>
+<table border="1">
+    <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Action</th>
+    </tr>
+    <?php foreach ($users as $user): ?>
+        <tr>
+            <td><?= $user['user_id'] ?></td>
+            <td><?= $user['username'] ?></td>
+            <td>
+                <form action="admin_dashboard.php" method="post">
+                    <input type="hidden" name="user_id" value="<?= $user['user_id'] ?>">
+
+                    <!-- Include input fields for updated user information -->
+                    <label for="updated_username">Updated Username:</label>
+                    <input type="text" name="updated_username" value="<?= $user['username'] ?>" required>
+
+                    <label for="updated_password">Updated Password:</label>
+                    <input type="password" name="updated_password" value="" required>
+
+
+                    <input type="hidden" name="form_action" value="update_user">
+                    <button type="submit">Update</button>
+                </form>
+                <form action="admin_dashboard.php" method="post">
+                    <input type="hidden" name="user_id" value="<?= $user['user_id'] ?>">
+                    <input type="hidden" name="form_action" value="delete_user">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</table>
+
 
 
 <footer id="footer">
