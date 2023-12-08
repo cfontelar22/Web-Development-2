@@ -6,16 +6,6 @@ if (session_status() === PHP_SESSION_NONE) {
 include("connect.php");
 
 
-// Fetch product_id from GET parameters
-$product_id = filter_input(INPUT_GET, 'product_id', FILTER_VALIDATE_INT);
-
-    $productSql = "SELECT * FROM products WHERE product_id = :product_id";
-    $productStmt = $db->prepare($productSql);
-    $productStmt->bindParam(':product_id', $product_id, PDO::PARAM_INT);
-    $productStmt->execute();
-    $product = $productStmt->fetch(PDO::FETCH_ASSOC);
-
-
 // Check if the admin is logged in and the username is stored in the session
 if (isset($_SESSION['username'])) {
     // Get the admin's username from the session
@@ -32,6 +22,16 @@ function fetchAllCategories($db) {
     $categoryFetchStmt = $db->query($categoryFetchSql);
     return $categoryFetchStmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+// Fetch category_name from GET parameters
+$category_name = filter_input(INPUT_GET, 'category_name', FILTER_SANITIZE_STRING);
+
+
+    $categorySql = "SELECT * FROM categories WHERE name = :category_name";
+    $categoryStmt = $db->prepare($categorySql);
+    $categoryStmt->bindParam(':category_name', $category_name, PDO::PARAM_STR);
+    $categoryStmt->execute();
+    $category = $categoryStmt->fetch(PDO::FETCH_ASSOC);
 
 $categories = fetchAllCategories($db);
 $pageId = 1; 
@@ -72,43 +72,52 @@ $pageId = 1;
     </div>
 </div>
 
-    <!-- Search Container -->
-    <div class="search-container">
-        <div class="search-input-container">
-            <input type="text" id="search" name="search" placeholder="PRODUCT SEARCH">
-            <button type="button" onclick="searchProducts()">
-                <img src="images/icon.png" alt="Search" class="search-button-icon">
-            </button>
-        </div>
-    </div>
-    <div class="pagination-links"></div>
-     <!-- User Signin Container -->
-     <div class="user-signin-container">
-        <?php
-        if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
-            // Display user information or logout link
-            echo '<div class="user-dropdown">
-                    <div class="dropdown-content">
-                        <a href="logout.php">Logout</a>
-                    </div>
-                </div>';
-        } else {
-            // Display login and registration links
-            echo '<div class="user-dropdown">
-                    <a href="login.php" id="signin-link"> 
-                        <img src="images/sign-in.png" alt="Sign In" class="dropbtn">
-                    </a>
-                    <div class="dropdown-content">
-                        <a href="login.php">Sign In</a> <!-- Update the href here as well -->
-                        <a href="registration.html">Register</a>
-                    </div>
-                </div>';
-        }
-        ?>
-        <a href="addtocart.html">
-            <img src="images/cart.png" alt="Cart" class="cart-icon">
-        </a>
-    </div>
+    <!-- Include the search form with categories -->
+    <form id="search-form" action="search.php" method="get">
+        <input type="text" id="search" name="search" placeholder="Search by Keyword">
+        
+        <!-- Add the dropdown menu for category restriction -->
+        <select name="category">
+            <option value="" selected>All Categories</option>
+            <?php
+                // Fetch categories from the database and populate the dropdown
+                $categoryFetchSql = "SELECT category_id, name FROM categories";
+                $categoryFetchStmt = $db->query($categoryFetchSql);
+                $categories = $categoryFetchStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                foreach ($categories as $category) {
+                    echo '<option value="' . $category['category_id'] . '">' . htmlspecialchars($category['name']) . '</option>';
+                }
+            ?>
+        </select>
+        <button type="submit">Search</button>
+            </form>
+            
+    <div class="user-signin-container">
+    <?php
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
+        // Display user information or logout link
+        echo '<div class="user-dropdown">
+                <div class="dropdown-content">
+                    <a href="logout.php">Logout</a>
+                </div>
+            </div>';
+    } else {
+        // Display login and registration links
+        echo '<div class="user-dropdown">
+                <a href="login.php" id="signin-link"> 
+                    <img src="images/sign-in.png" alt="Sign In" class="dropbtn">
+                </a>
+                <div class="dropdown-content">
+                    <a href="login.php">Sign In</a>
+                    <a href="registration.html">Register</a>
+                </div>
+            </div>';
+    }
+    ?>
+    <a href="addtocart.html">
+        <img src="images/cart.png" alt="Cart" class="cart-icon">
+    </a>
 </div>
 
 <form id="login-form" action="login.php" method="post" style="display: none;">
@@ -169,28 +178,42 @@ if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']) {
 
             foreach ($categoryProducts as $product) :
             ?>
-               <div class="product-item">
-    <a href="product.php?product_id=<?php echo $product['product_id']; ?>" class="product-link">
-        <img src="path/to/upload/directory/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
-        <h2 class="product-title">
-            <?php echo htmlspecialchars($product['name']); ?>
-        </h2>
-    </a>
-    <div class="product-details">
-        <p><?php echo htmlspecialchars($product['description']); ?></p>
-        <p class="product-price">$<?php echo $product['price']; ?></p>
-        <a href="product.php?product_id=<?php echo $product['product_id']; ?>" class="add-to-cart-button">View Item</a>
-    </div>
-</div>
+            <div class="product-item">
+                <a href="product.php?product_id=<?php echo $product['product_id']; ?>" class="product-link">
+                    <h2 class="product-title">
+                        <?php echo htmlspecialchars($product['name']); ?>
+                    </h2>
+                </a>
+                <div class="product-details">
+                    <p><?php echo htmlspecialchars($product['description']); ?></p>
+                    <p class="product-price">$<?php echo $product['price']; ?></p>
 
+                    <!-- Fetch and display associated images -->
+                    <?php
+                    $imagesSql = "SELECT * FROM images WHERE product_id = :product_id";
+                    $imagesStmt = $db->prepare($imagesSql);
+                    $imagesStmt->bindParam(':product_id', $product['product_id'], PDO::PARAM_INT);
+                    $imagesStmt->execute();
+                    $images = $imagesStmt->fetchAll(PDO::FETCH_ASSOC);
+                    ?>
+
+                    <!-- Display images -->
+                    <div class="product-images">
+                        <?php foreach ($images as $image): ?>
+                            <img src="uploads/<?= $image['filename'] ?>" alt="Product Image">
+                        <?php endforeach; ?>
+                        <a href="product.php?product_id=<?php echo $product['product_id']; ?>" class="add-to-cart-button">View Item</a>
+                    </div>
+                </div>
+            </div>
             <?php endforeach; ?>
         <?php endforeach; ?>
     </div>
 </div>
 
 
-<?php
 
+<?php
 
 // Function to fetch products for a specific category
 function fetchProductsByCategory($db, $categoryId) {
