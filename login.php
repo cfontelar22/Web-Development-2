@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Include the connection file
 include("connect.php");
 
+
 // Function to authenticate a user
 function authenticateUser($username, $password) {
     global $db;
@@ -47,9 +48,8 @@ function authenticateUser($username, $password) {
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If the form is submitted, attempt to authenticate
-    $username = filter_var($_POST['username'], FILTER_SANITIZE_STRING);
-    $password = filter_var($_POST['password'], FILTER_SANITIZE_STRING);
-
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
     if (authenticateUser($username, $password)) {
         // Authentication successful, set session variables
@@ -64,11 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else {
         // Authentication failed, show an error message
-        $_SESSION['error'] = "Invalid username or password";
-        header("Location: login.php");
-        exit();
+        $loginError = "Invalid username or password";
     }
 }
+
 
 ?>
 
@@ -82,28 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" type="text/css" href="index.css"> 
 </head>
 <body>
-    <!-- Header -->
-    <header id="header" class="fixed-header">
-    <a href="index.php">    
-        <img src="images/lbglogo.png" alt="Logo" class="logo">
-    </a>
-        <nav id="navigation">
-            <ul>
-                <li><a href="index.php">Home</a></li>
-                <li class="dropdown">
-                    <a href="#">Solutions</a>
-                    <div class="dropdown-content">
-                        <a href="solutions.html">Security Solutions</a>
-                        <a href="solutions.html">Network Solutions</a>
-                        <a href="solutions.html">ICT Infrastructure</a>
-                    </div>
-                </li>
-                <li><a href="#">Events</a></li>
-                <li><a href="#">Jobs</a></li>
-                <li><a href="#">Contact Us</a></li>
-            </ul>
-        </nav>
-    </header>
+
 
     <div class="login-container">
         <h2>Login</h2>
@@ -119,32 +97,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         <p>New Here? <a href="register.php">Register</a></p>
     </div>
-
-    <!-- Footer -->
-    <footer id="footer">
-        <div class="footer-division">
-            <ul>
-                <li><a href="index.php">Home</a></li>
-                <li><a href="#">Careers</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Contact Us</a></li>
-            </ul>
-        </div>
-        <div class="footer-division">
-            <h3>Solutions</h3>
-            <ul>
-                <li><a href="solutions.html">Security Solutions</a></li>
-                <li><a href="solutions.html">Network Solutions</a></li>
-                <li><a href="solutions.html">ICT Infrastructure</a></li>
-            </ul>
-        </div>
-        <div class="footer-division">
-            <a href="index.php">
-                <div><img src="images/lbglogo.png" alt="Logo" class="logo">
-                    <p>© Copyright Jay Fontelar<br>All rights reserved. 2023.</p>
-                </div>
-            </a>
-        </div>
-    </footer>
 </body>
 </html>
