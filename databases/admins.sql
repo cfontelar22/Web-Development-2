@@ -24,48 +24,45 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- Table structure for table `admins`
 --
 
-CREATE TABLE `users` (
-  `user_id` int(11) NOT NULL,
+CREATE TABLE `admins` (
+  `admin_id` int(11) NOT NULL,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
-  `role` varchar(20) NOT NULL DEFAULT 'user'
+  `role` varchar(20) NOT NULL DEFAULT 'admin'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `users`
+-- Dumping data for table `admins`
 --
 
-INSERT INTO `users` (`user_id`, `username`, `password`, `email`, `role`) VALUES
-(26, 'userjay', '$2y$10$HYepVhTc3TRUsHT9Hzw1Sej2ZgS6N8FZMaC2eBZlC5inQkpq86Dzm', 'user@gmail.com', 'user'),
-(27, 'jc12', '$2y$10$u.e5Uu0FsCzN5H57VWmkO.r7nJ7DQRL61iyRY7XqZueKTrB//1UNe', 'jc@gmail.com', 'user'),
-(28, 'jayz22', '$2y$10$aUUnYk9Rlp.FsUlWpD40l.RKYt40bZNF5vprtQ.XradXqbLsUfMoK', 'jayz@gc.com', 'user'),
-(34, 'usertry11', '$2y$10$igYzfXws.qWlU1q0Gjh3z.0j8xBIuY3ajwOFBjiqQz91iEinksKuS', 'user', 'user'),
-(35, 'jaytry', '$2y$10$1A8kKlRwzt7hPGmJlkIS4usFNfChIatXcS408AhFJXj4ipyPOUupe', 'jay', 'user'),
-(36, 'jayjay', '$2y$10$ZSehGbrKp.N98eZDE7qFz.zpAnvxpbOFv7xIsl.RY/JCpBmLI.ORm', 'jay@gmail.com', 'user');
+INSERT INTO `admins` (`admin_id`, `username`, `password`, `email`, `role`) VALUES
+(2, 'masteradmin', '$2y$10$EgQaO.5LJnIsfQkdXY91h.ZU0rgwmglKhtbP1jgArc8bTfd4D.7rW', 'admin@gmail.com', 'admin'),
+(3, 'admin-cj', '$2y$10$jnP2.OHWV8lPJrxrt8vdVOyGf3B/CfkEI/.WAubowKceHlo97GBm.', 'cj@fontelar', 'admin'),
+(4, 'adminbree', '$2y$10$tqriDQgyOdrvxwUW7LxNk.A1wAccgOdZM/8KZNXUyUiOIOC10ddti', 'breeadmin@gc.com', 'admin');
 
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `users`
+-- Indexes for table `admins`
 --
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`user_id`);
+ALTER TABLE `admins`
+  ADD PRIMARY KEY (`admin_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT for table `users`
+-- AUTO_INCREMENT for table `admins`
 --
-ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+ALTER TABLE `admins`
+  MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
