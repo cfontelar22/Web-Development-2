@@ -19,11 +19,9 @@ body {
     color: #fff;
 }
 
-/* Spacing and Alignment */
-.product-listing, .product-item, .category-row {
-    margin: 20px auto;
+.product-listing {
+    margin: 20px auto; 
 }
-
 .header-container {
     display: flex;
     align-items: center;
@@ -497,50 +495,44 @@ button:hover {
     text-align: center;
     font-size: 28px;
     font-weight: bold;
-    color:#033c46;
+    color: #033c46;
     margin-bottom: 20px;
 }
 
 .product-listing {
-    background-color: #ffffff;
-    max-width: 1200px;
     margin: 20px auto;
-    padding: 20px;
-    border: 1px solid #ddd; 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
-    border-radius: 10px; 
-}
-
-.product-details .add-to-cart-button {
-    color:rgb(170, 166, 166);
+    max-width: 1200px;
 }
 
 .product-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    justify-content: space-around;
 }
 
 .product-item {
-    flex: 0 0 calc(33.33% - 20px);
+    flex: 0 0 calc(20% - 20px);
     box-sizing: border-box;
     overflow: hidden;
-    border: 1px solid #000;
+    border: 1px solid #ddd;
     border-radius: 8px;
     margin-bottom: 20px;
-    background-color: #eceaea;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column; 
 }
 
 .product-item a {
     text-decoration: none;
-    color: #000000;
-    display: block;
+    color: #000;
+    flex: 1; 
 }
 
 .product-item img {
     width: 100%;
     height: auto;
-    border-bottom: 2px solid #000;
+    border-bottom: 1px solid #ddd;
     border-radius: 6px 6px 0 0;
 }
 
@@ -550,6 +542,7 @@ button:hover {
 
 .product-title {
     margin: 0;
+    font-size: 16px;
 }
 
 .product-price {
@@ -558,7 +551,8 @@ button:hover {
 }
 
 .add-to-cart-button {
-    background-color:  #033c46;
+    background-color: #033c46;
+    color: #fff;
     padding: 8px 0;
     text-decoration: none;
     border-radius: 0 0 8px 8px;
@@ -570,31 +564,47 @@ button:hover {
     background-color: #217174;
 }
 
+
+
+.product-details .add-to-cart-button {
+    color:rgb(170, 166, 166);
+}
+
+
+
 /* ADMIN DASHBOARD */
 
+
 #welcome-container {
-    background-color:  #033c46;
-    color: #fff;
+    background-color: #033c46;
+    color: #ffffff;
     padding: 20px;
     text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    margin-bottom: 20px;
+    border: 2px solid #000000; 
+    border-radius: 10px; 
+    margin-bottom: 30px; 
 }
 
 #welcome-container h2 {
-    font-size: 2em;
-    margin-bottom: 10px;
-    text-align: center;
+    margin-bottom: 30px; 
 }
 
-
-
-#welcome-container h1 {
-    text-align: center;
-    color: #033c46;
-    margin-bottom: 30px;
+#welcome-container a {
+    text-decoration: none;
+    color:  #ffffff;
+    font-weight: bold;
+    background-color: #0f2d35;
+    border: 2px solid #0f2d35; 
+    padding: 10px;
+    border-radius: 5px; 
+    transition: background-color 0.3s, color 0.3s;
 }
+
+#welcome-container a:hover {
+    background-color: #217174;
+    color: rgb(63, 202, 20);
+}
+
 
 
 form {
@@ -657,3 +667,27 @@ tr:nth-child(even) {
 tr:hover {
     background-color: #ddd;
 }
+
+/* SEARCH PHP */
+
+/* Pagination Links */
+.pagination-links {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination-links a {
+    display: inline-block;
+    padding: 10px;
+    margin: 0 5px;
+    text-decoration: none;
+    background-color: #033c46;
+    color: #fff;
+    border-radius: 5px;
+}
+
+.pagination-links a:hover {
+    background-color: #217174;
+}
+
